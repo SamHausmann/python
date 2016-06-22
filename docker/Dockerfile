@@ -1,5 +1,6 @@
-FROM ubuntu:14.04
+FROM rosetteapi/docker-base-layer:latest
 MAINTAINER Fiona Hasanaj
+ENV LANGUAGE=python
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN locale-gen en_US.UTF-8 && /usr/sbin/update-locale LANG=en_US.UTF-8
@@ -13,7 +14,6 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update && \
     	apt-get -y install \
         wget \
-        curl \
         libssl-dev \
         libffi-dev \
         python-pip \
@@ -27,7 +27,6 @@ RUN apt-get update && \
         python3.3 \
         python3.4 \
         python3.5 \
-        git\
         pypy && \
     	apt-get clean && \
     	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -43,12 +42,9 @@ RUN pip install -U pip && pip install tox
 RUN pip install --upgrade autopep8
 
 # copy over the necessary files
-COPY run_python.sh /python-dev/run_python.sh
-RUN chmod 755 /python-dev/run_python.sh
-COPY tox.ini /python-dev/tox.ini
-WORKDIR /python-dev
+RUN mkdir /test-dev/tests
+COPY tox.ini /test-dev/tox.ini
 
 # allow interactive bash inside docker container
-CMD ./run_python.sh
+CMD ./docker-entrypoint.sh $API_KEY $FILENAME $ALT_URL $GIT_USERNAME $VERSION $LANGUAGE
 
-VOLUME ["/source"]
